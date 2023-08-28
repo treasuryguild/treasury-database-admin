@@ -1,0 +1,26 @@
+.main {
+    display: flex; 
+    align-items: flex-start; 
+    text-align: center;
+}
+
+.main > div:nth-child(2) { 
+    margin-left: 185px; 
+}
+
+.navbar {
+    display: flex;
+    flex-direction: column; 
+    justify-content: center;
+    padding: 10px;
+    position: fixed; 
+    top: 80px; 
+    z-index: 1000; 
+    width: 180px; 
+}
+
+.backButton {
+    padding: 5px;
+    margin: 5px;
+    cursor: pointer;
+}
