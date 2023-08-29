@@ -7,6 +7,7 @@ import { getTransactions } from '../../../utils/getTransactions';
 import Link from 'next/link';
 import styles from '../../../styles/Transactions.module.css';
 import TransactionsTable from '../../../components/TransactionsTable'; 
+import TransactionManager from '../../../components/TransactionManager'; 
 import Balance from '../../../components/Balance';
 import Report from '../../../components/Report';
 import ManageDatabase from '../../../components/ManageDatabase';
@@ -19,7 +20,7 @@ interface Project {
 }
 
 const ProjectPage = () => {
-    const [activeTab, setActiveTab] = useState<'transactions' | 'balance' | 'report' | 'managedatabase'>('transactions');
+    const [activeTab, setActiveTab] = useState<'transactions' | 'txmanager' | 'balance' | 'report' | 'managedatabase'>('transactions');
     const { myVariable, setMyVariable } = useMyVariable();
     const router = useRouter();
     const { groupName, projectName } = router.query;
@@ -74,6 +75,7 @@ const ProjectPage = () => {
                 <div className={styles.navbar}>
                     <button onClick={() => router.back()} className={styles.backButton}>Go Back</button>
                     <button onClick={() => setActiveTab('transactions')} className={activeTab === 'transactions' ? styles.active : styles.notactive}>Transactions</button>
+                    <button onClick={() => setActiveTab('txmanager')} className={activeTab === 'txmanager' ? styles.active : styles.notactive}>Transaction Manager</button>
                     <button onClick={() => setActiveTab('balance')} className={activeTab === 'balance' ? styles.active : styles.notactive}>Balance</button>
                     <button onClick={() => setActiveTab('report')} className={activeTab === 'report' ? styles.active : styles.notactive}>Report</button>
                     <button onClick={() => setActiveTab('managedatabase')} className={activeTab === 'managedatabase' ? styles.active : styles.notactive}>Manage Database</button>
@@ -87,6 +89,8 @@ const ProjectPage = () => {
             {!loading && (
                 activeTab === 'transactions' ? (
                     <TransactionsTable transactions={myVariable.transactions} groupName={groupName as string} projectName={projectName as string} />
+                ) : activeTab === 'txmanager' ? (
+                    <TransactionManager myVariable={myVariable} groupName={groupName as string} projectName={projectName as string} />
                 ) : activeTab === 'balance' ? (
                     <Balance />
                 ) : activeTab === 'report' ? (

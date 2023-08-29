@@ -37,9 +37,6 @@ const Nav = () => {
           <Link href="/" className="navitems">
             Home
           </Link>
-          <Link href='/updatedatabase' className="navitems">
-            Update Database
-          </Link>
           {!session && (<button onClick={signInWithDiscord} className="navitems">
           Sign In with Discord
         </button>)}
