@@ -27,11 +27,11 @@ const TransactionManager: React.FC<TransactionManagerProps> = ({ myVariable, gro
   }
 
   async function updateTransaction(tx: any) {
-    //const data = await updateTx(tx.transaction_id);
     //console.log(myVariable)
-    const data = await getGitHubTxs(groupName, projectName, myVariable.projectInfo.project_type);
+    const {transactions, txids} = await getGitHubTxs(groupName, projectName, myVariable.projectInfo.project_type);
+    const data = await updateTx(transactions, txids, myVariable);
     //let status = await updateDatabase(data[0].metadata['674'], data[0].tx_hash, myVariable);
-    console.log("Updating Tx: ", data)
+    console.log("Updating Tx: ", data, txids)
   }
 
   const renderTableHeaders = () => {

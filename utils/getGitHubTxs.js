@@ -4,10 +4,11 @@ export async function getGitHubTxs(Group, Project, wallet_type) {
   // Replace spaces with hyphens and normalize wallet_type
   const sanitizedGroup = Group.replace(/ /g, "-");
   const sanitizedProject = Project.replace(/ /g, "-");
-  const normalizedWalletType = wallet_type.replace(/ /g, "").replace("Proposal", "Fund");
+  const normalizedWalletType = wallet_type.replace(/ /g, "").replace("Proposal", "");
 
   const baseUrl = `https://api.github.com/repos/treasuryguild/treasury-system-v4/contents/Transactions/${sanitizedGroup}/`;
   let transactions = [];
+  let txids = [];
 
   let url = `${baseUrl}${normalizedWalletType}/${sanitizedProject}/`;
 
@@ -39,6 +40,9 @@ export async function getGitHubTxs(Group, Project, wallet_type) {
             txInfo: txContent,
             txDate: timestamp
           });
+          if (txContent.txid) {
+            txids.push(txContent.txid); 
+          }
         });
       }
     }
@@ -46,5 +50,5 @@ export async function getGitHubTxs(Group, Project, wallet_type) {
     console.log(`Error fetching transactions: ${error}`);
   }
   
-  return transactions;
+  return { transactions, txids };
 }
