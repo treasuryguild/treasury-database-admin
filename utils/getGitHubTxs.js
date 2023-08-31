@@ -37,7 +37,7 @@ export async function getGitHubTxs(Group, Project, wallet_type) {
           const timestamp = files[index].name.split('-')[0];
           transactions.push({
             txType: txType.name,
-            txInfo: txContent,
+            metadata: txContent,
             txDate: timestamp
           });
           if (txContent.txid) {

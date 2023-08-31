@@ -1,7 +1,6 @@
 import styles from '../styles/Transactions.module.css';
 import { deleteTx } from '../utils/deleteTx'
-import { updateTx } from '../utils/updateTx'
-import { getGitHubTxs } from '../utils/getGitHubTxs'
+import { processTxInfo } from '../utils/processTxInfo'
 import { updateDatabase } from '../utils/updateDatabase'
 import Link from 'next/link';
 
@@ -28,10 +27,10 @@ const TransactionManager: React.FC<TransactionManagerProps> = ({ myVariable, gro
 
   async function updateTransaction(tx: any) {
     //console.log(myVariable)
-    const {transactions, txids} = await getGitHubTxs(groupName, projectName, myVariable.projectInfo.project_type);
-    const data = await updateTx(transactions, txids, myVariable);
+    const matchingEntry = myVariable.transactionInfo.find((entry: any) => entry.txInfo.tx_hash === tx.transaction_id);
+    let data = processTxInfo(matchingEntry, myVariable.projectInfo.wallet)
     //let status = await updateDatabase(data[0].metadata['674'], data[0].tx_hash, myVariable);
-    console.log("Updating Tx: ", data, txids)
+    console.log("Updating Tx: ", tx.transaction_id, matchingEntry, data)
   }
 
   const renderTableHeaders = () => {

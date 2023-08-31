@@ -1,7 +1,6 @@
 import axios from "axios";
-import { processTxInfo } from '../utils/processTxInfo'
 
-export async function updateTx(transactions, txids, myVariable) {
+export async function getBlockchainTxs(transactions, txids) {
     async function getTxInfo() {
         const url = "https://api.koios.rest/api/v0/tx_info";
         const data = {
@@ -25,19 +24,16 @@ export async function updateTx(transactions, txids, myVariable) {
     }
     
     // Merge the data
-    const finalData = [];
+    const allTxs = [];
     for (let j in transactions) {
-      const txid = transactions[j].txInfo.txid;
+      const txid = transactions[j].metadata.txid;
       if (txInfoMap[txid]) {
-        finalData.push({
+        allTxs.push({
           txInfo: txInfoMap[txid],
           txMetadata: transactions[j]
         });
       }
     }
-
-    let txInfo = await processTxInfo(finalData, myVariable);
-    console.log("getting txInfo")
     
-    return txInfo;
+    return allTxs;
 }

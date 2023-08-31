@@ -4,6 +4,8 @@ import { useMyVariable } from '../../../context/MyVariableContext';
 import { getOrgs } from '../../../utils/getOrgs';
 import { getMonthlyBudget } from '../../../utils/getMonthlyBudget';
 import { getTransactions } from '../../../utils/getTransactions';
+import { getBlockchainTxs } from '../../../utils/getBlockchainTxs'
+import { getGitHubTxs } from '../../../utils/getGitHubTxs'
 import Link from 'next/link';
 import styles from '../../../styles/Transactions.module.css';
 import TransactionsTable from '../../../components/TransactionsTable'; 
@@ -50,14 +52,16 @@ const ProjectPage = () => {
     useEffect(() => {
         const fetchProjectData = async () => {
             let budgetInfo = myVariable.projectInfo;
-            let transactions = myVariable.transactions;
+            let txs = myVariable.transactions;
     
             // If foundProject exists, fetch the monthly budget
             if (projectData) {
                 setLoading(true);
                 budgetInfo = await getMonthlyBudget(projectData.project_id);
-                transactions = await getTransactions(projectData.project_id);
-                setMyVariable(prevState => ({ ...prevState, budgetInfo, projectInfo: projectData, transactions }));
+                txs = await getTransactions(projectData.project_id);
+                const {transactions, txids} = await getGitHubTxs(groupName, projectName,  projectData.project_type);
+                const allTxs = await getBlockchainTxs(transactions, txids);
+                setMyVariable(prevState => ({ ...prevState, budgetInfo, projectInfo: projectData, transactions: txs, transactionInfo: allTxs }));
                 setLoading(false);
             }
         };
