@@ -28,7 +28,7 @@ const TransactionManager: React.FC<TransactionManagerProps> = ({ myVariable, gro
   async function updateTransaction(tx: any) {
     //console.log(myVariable)
     const matchingEntry = myVariable.transactionInfo.find((entry: any) => entry.txInfo.tx_hash === tx.transaction_id);
-    let data = processTxInfo(matchingEntry, myVariable.projectInfo.wallet)
+    let data = processTxInfo(matchingEntry, myVariable)
     //let status = await updateDatabase(data[0].metadata['674'], data[0].tx_hash, myVariable);
     console.log("Updating Tx: ", tx.transaction_id, matchingEntry, data)
   }
