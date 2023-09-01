@@ -29,7 +29,11 @@ export function processTxInfo(matchingEntry, myVariable) {
           'fee': txInfo.fee,
           'transaction_date': txInfo.tx_timestamp * 1000,
           'tx_type': txType == "Incoming" ? txType : "Outgoing",
-          'transaction_id': txInfo.tx_hash
+          'transaction_id': txInfo.tx_hash,
+          'project_id': myVariable.projectInfo.project_id,
+          'recipients': txMetadata.metadata.msg.find(str => /Recipients: (\d+)/.test(str))?.match(/(\d+)/)?.[1],
+          'exchange_rate': txMetadata.metadata.msg.find(str => /@(\d+\.?\d*)/.test(str))?.match(/@(\d+\.?\d*)/)?.[1],
+          'tx_json_url': txMetadata.tx_json_url
         }
         return result;
       };
@@ -47,14 +51,15 @@ export function processTxInfo(matchingEntry, myVariable) {
         let finalResult = {
             'total_tokens': [],
             'total_amounts': [],
-            'fee': txInfo.fee  // Assuming txInfo.fee is available
+            'fee': txInfo.fee  
         };
-    
-        // Store decimals information for later
+        let walletStakeAddr = null;
+        walletStakeAddr = myVariable.stake_addr;
+        
         let decimalsInfo = { 'ADA': 6 };
     
         txInfo.outputs.forEach((output) => {
-            if (output.payment_addr && output.payment_addr.bech32 === wallet) {
+            if (output.stake_addr === walletStakeAddr) {
                 // Handle ADA
                 if (!aggregatedResult.hasOwnProperty('ADA')) {
                     aggregatedResult['ADA'] = 0;
@@ -106,11 +111,10 @@ export function processTxInfo(matchingEntry, myVariable) {
         let walletStakeAddr = null;
         let decimalsInfo = { 'ADA': 6 };
     
-        walletStakeAddr = txInfo.inputs[0].stake_addr;
+        walletStakeAddr = myVariable.stake_addr;
     
         // Then process transactions that don't have this stake_addr
-        txInfo.outputs.forEach((output) => {
-            const outputWallet = output.payment_addr && output.payment_addr.bech32;
+        txInfo.outputs.forEach((output) => {     
             if (output.stake_addr !== walletStakeAddr) {
                 // Initialize ADA
                 if (!aggregatedResult.hasOwnProperty('ADA')) {

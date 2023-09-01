@@ -21,6 +21,7 @@ type MyVariable = {
   transactions?: any;
   transactionInfo?: any;
   report?: any;
+  stake_addr: string;
   // other keys go here
 };
 
@@ -36,7 +37,7 @@ interface MyVariableProviderProps {
 }
 
 export const MyVariableProvider: React.FC<MyVariableProviderProps> = ({ children }) => {
-  const [myVariable, setMyVariable] = useState<MyVariable>({ groupInfo: [], projectInfo: undefined, budgetInfo: undefined, transactions: undefined, transactionInfo: undefined, report: undefined });
+  const [myVariable, setMyVariable] = useState<MyVariable>({ groupInfo: [], projectInfo: undefined, budgetInfo: undefined, transactions: undefined, transactionInfo: undefined, report: undefined, stake_addr: '' });
 
   return (
     <MyVariableContext.Provider value={{ myVariable, setMyVariable }}>

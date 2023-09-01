@@ -61,10 +61,9 @@ const ProjectPage = () => {
                 txs = await getTransactions(projectData.project_id);
                 const {transactions, txids} = await getGitHubTxs(groupName, projectName,  projectData.project_type);
                 const allTxs = await getBlockchainTxs(transactions, txids);
-                const incomingTx = allTxs.find((entry: any) => entry.txMetadata.txType === "Incoming");
-                //const stake_addr = incomingTx?.txInfo.inputs[0].stake_addr;
-                console.log("stake_addr", incomingTx)
-                setMyVariable(prevState => ({ ...prevState, budgetInfo, projectInfo: projectData, transactions: txs, transactionInfo: allTxs }));
+                const incomingTx = allTxs.find((entry: any) => entry.txMetadata.txType !== "Incoming");
+                const stake_addr = incomingTx?.txInfo.inputs[0].stake_addr;
+                setMyVariable(prevState => ({ ...prevState, budgetInfo, projectInfo: projectData, transactions: txs, transactionInfo: allTxs, stake_addr }));
                 setLoading(false);
             }
         };

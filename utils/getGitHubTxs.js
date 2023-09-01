@@ -31,14 +31,15 @@ export async function getGitHubTxs(Group, Project, wallet_type) {
         // Fetch each file in parallel and add its content and timestamp to the transactions array
         const filePromises = files.map(file => axios.get(file.download_url));
         const fileResponses = await Promise.all(filePromises);
-
+        
         fileResponses.forEach((response, index) => {
           const txContent = response.data;
           const timestamp = files[index].name.split('-')[0];
           transactions.push({
             txType: txType.name,
             metadata: txContent,
-            txDate: timestamp
+            txDate: timestamp,
+            tx_json_url: files[index].download_url 
           });
           if (txContent.txid) {
             txids.push(txContent.txid); 
