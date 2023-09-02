@@ -13,18 +13,92 @@ const tickers = {
 
 export function processTxInfo(matchingEntry, myVariable) {
     const wallet = myVariable.projectInfo.wallet
+
+    const determineTxType = (txInfo) => {
+        // Initialize variables
+        let inputSum = 0;
+        let outputSum = 0;
+        const uniqueInputStakeAddr = new Set();
+        const uniqueOutputStakeAddr = new Set();
+      
+        // Verify that inputs and outputs are defined and non-empty
+        if (!txInfo.inputs || !txInfo.outputs || txInfo.inputs.length === 0 || txInfo.outputs.length === 0) {
+          return 'Unknown';
+        }
+      
+        // Check certificate conditions for "Delegation" and "Staking"
+        let delegationCount = 0;
+        let stakeRegistrationCount = 0;
+      
+        if (txInfo.certificates) {
+          txInfo.certificates.forEach(cert => {
+            if (cert.type === 'stake_registration') stakeRegistrationCount++;
+            if (cert.type === 'delegation') delegationCount++;
+          });
+        }
+      
+        // Check if all stake_addr match myVariable.stake_addr in inputs and outputs
+        const allMatchStakeAddr = txInfo.inputs.every(input => input && input.stake_addr === myVariable.stake_addr) &&
+                                  txInfo.outputs.every(output => output && output.stake_addr === myVariable.stake_addr);
+      
+        // Populate unique stake addresses and calculate sum
+        txInfo.inputs.forEach(input => {
+          if (input && input.value && input.stake_addr) {
+            inputSum += parseInt(input.value, 10);
+            uniqueInputStakeAddr.add(input.stake_addr);
+          }
+        });
+        txInfo.outputs.forEach(output => {
+          if (output && output.value) {
+            outputSum += parseInt(output.value, 10);
+            uniqueOutputStakeAddr.add(output.stake_addr);
+          }
+        });
+      
+        // Determine txType
+        let txType = 'Unknown';
+      
+        // Check for "Delegation"
+        if (delegationCount === 1 && txInfo.certificates.length === 1) {
+          txType = 'Delegation';
+        }
+        
+        // Check for "Staking"
+        else if (stakeRegistrationCount === 1 && txInfo.certificates.length === 2) {
+          txType = 'Staking';
+        }
+      
+        // Check for "Incoming"
+        else if (uniqueOutputStakeAddr.has(myVariable.stake_addr) && !uniqueInputStakeAddr.has(myVariable.stake_addr)) {
+          txType = 'Incoming';
+        }
+      
+        // Check for "Outgoing"
+        else if (uniqueInputStakeAddr.size === 1 && uniqueInputStakeAddr.has(myVariable.stake_addr) &&
+                 Array.from(uniqueOutputStakeAddr).some(addr => addr !== myVariable.stake_addr || addr == null)) {
+          txType = 'Outgoing';
+        }
+      
+        return txType;
+      };                         
+      
     const compareData = (txMetadata, txInfo) => {
+        const tx_Type = determineTxType(txInfo);
+        console.log(`Transaction type: ${tx_Type}`);
         const txType = txMetadata.txType;
         const contributions = txMetadata.metadata.contributions;
         let result = {}
       
-        if (txType === 'Incoming') {
+        if (tx_Type === 'Incoming') {
           result = compareIncoming(txInfo, contributions, txType);
-        } else if (txType === 'bulkTransactions') {
+        } else if (tx_Type === 'Outgoing') {
           result = compareOutgoing(txInfo, contributions, txType);
-        } else if (txType !== 'Incoming' || txType !== 'bulkTransactions') {
+        } else if (tx_Type !== 'Staking') {
+          result = compareStaking(txInfo, contributions, txType);
+        } else {
           result = compareOther(txInfo, contributions, txType);
         }
+
         result = {...result,
           'fee': txInfo.fee,
           'transaction_date': txInfo.tx_timestamp * 1000,
@@ -155,9 +229,15 @@ export function processTxInfo(matchingEntry, myVariable) {
             finalResult['total_tokens'].push(key);
             finalResult['total_amounts'].push((aggregatedResult[key] / Math.pow(10, decimalsInfo[key])).toFixed(decimalsInfo[key]));
         });
-    
+        console.log("final result", finalResult)
         return finalResult;
     };              
+
+  const compareStaking = (txInfo, contributions, txType) => {
+    let result = {};
+    
+    return result;
+  };
 
   const compareOther = (txInfo, contributions, txType) => {
     let result = {};
