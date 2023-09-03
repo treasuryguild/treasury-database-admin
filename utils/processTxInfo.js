@@ -78,7 +78,15 @@ export function processTxInfo(matchingEntry, myVariable) {
                  Array.from(uniqueOutputStakeAddr).some(addr => addr !== myVariable.stake_addr || addr == null)) {
           txType = 'Outgoing';
         }
+
+        else if (allMatchStakeAddr && inputSum === outputSum + parseInt(txInfo.fee, 10)) {
+          txType = 'InternalTransfer'; 
+        }
       
+        else if (txInfo.withdrawals && txInfo.withdrawals.some(withdrawal => 'amount' in withdrawal)) {
+          txType = 'RewardsWithdrawal';
+        }
+        
         return txType;
       };                         
       
@@ -88,25 +96,29 @@ export function processTxInfo(matchingEntry, myVariable) {
         const txType = txMetadata.txType;
         const contributions = txMetadata.metadata.contributions;
         let result = {}
-      
+
+        let exchange_rate = txMetadata.metadata.msg.find(str => /@(\d+\.?\d*)/.test(str))?.match(/@(\d+\.?\d*)/)?.[1];
+        const exchangeRate = parseFloat(txMetadata.metadata.msg.find(str => str.includes("ADA") && str.includes("USD"))?.match(/([\d.]+) USD/)?.[1] ?? NaN) / parseFloat(txMetadata.metadata.msg.find(str => str.includes("ADA") && str.includes("USD"))?.match(/([\d.]+) ADA/)?.[1] ?? NaN) || null;
+        let finalExchangeRate = exchange_rate ?? parseFloat(exchangeRate).toFixed(3);
+
         if (tx_Type === 'Incoming') {
           result = compareIncoming(txInfo, contributions, txType);
         } else if (tx_Type === 'Outgoing') {
           result = compareOutgoing(txInfo, contributions, txType);
-        } else if (tx_Type !== 'Staking') {
-          result = compareStaking(txInfo, contributions, txType);
+        } else if (tx_Type === 'Staking' || tx_Type === 'Delegation' || tx_Type === 'InternalTransfer') {
+          result = compareStaking(txInfo, contributions, tx_Type);
         } else {
-          result = compareOther(txInfo, contributions, txType);
+          result = compareRewardsWithdrawal(txInfo, contributions, txType);
         }
 
         result = {...result,
           'fee': txInfo.fee,
           'transaction_date': txInfo.tx_timestamp * 1000,
-          'tx_type': txType == "Incoming" ? txType : "Outgoing",
+          'tx_type': tx_Type == "Incoming" || tx_Type == "RewardsWithdrawal" ? tx_Type : "Outgoing",
           'transaction_id': txInfo.tx_hash,
           'project_id': myVariable.projectInfo.project_id,
           'recipients': txMetadata.metadata.msg.find(str => /Recipients: (\d+)/.test(str))?.match(/(\d+)/)?.[1],
-          'exchange_rate': txMetadata.metadata.msg.find(str => /@(\d+\.?\d*)/.test(str))?.match(/@(\d+\.?\d*)/)?.[1],
+          'exchange_rate': finalExchangeRate,
           'tx_json_url': txMetadata.tx_json_url
         }
         return result;
@@ -124,8 +136,7 @@ export function processTxInfo(matchingEntry, myVariable) {
         let aggregatedResult = {};
         let finalResult = {
             'total_tokens': [],
-            'total_amounts': [],
-            'fee': txInfo.fee  
+            'total_amounts': [] 
         };
         let walletStakeAddr = null;
         walletStakeAddr = myVariable.stake_addr;
@@ -170,9 +181,7 @@ export function processTxInfo(matchingEntry, myVariable) {
             finalResult['total_amounts'].push((aggregatedResult[key] / Math.pow(10, decimalsInfo[key])).toFixed(decimalsInfo[key]));
         });
     
-        // Add transaction date to finalResult
-        finalResult['transaction_date'] = txInfo.tx_timestamp * 1000;
-    
+        console.log("final result", finalResult)
         return finalResult;
     };
     
@@ -235,13 +244,24 @@ export function processTxInfo(matchingEntry, myVariable) {
 
   const compareStaking = (txInfo, contributions, txType) => {
     let result = {};
-    
+    if (txType == "Staking") {
+      result = {total_tokens: ['ADA'], total_amounts: ['2']}
+    } else {
+      result = {total_tokens: ['ADA'], total_amounts: ['0']}
+    }
+    console.log("Result", result)
     return result;
   };
 
-  const compareOther = (txInfo, contributions, txType) => {
-    let result = {};
-    
+  const compareRewardsWithdrawal = (txInfo, contributions, txType) => {
+    let result = {
+      'total_tokens': [],
+      'total_amounts': []
+    };
+    let rewards = parseFloat(txInfo.withdrawals[0].amount / 1000000).toFixed(6)
+    result['total_amounts'] = [rewards];
+    result['total_tokens'] = ['ADA']
+    console.log("Result", result)
     return result;
   };
 
