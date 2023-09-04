@@ -113,13 +113,15 @@ export function processTxInfo(matchingEntry, myVariable) {
 
         result = {...result,
           'fee': txInfo.fee,
+          'md_version': txMetadata.metadata.mdVersion[0],
           'transaction_date': txInfo.tx_timestamp * 1000,
           'tx_type': tx_Type == "Incoming" || tx_Type == "RewardsWithdrawal" ? tx_Type : "Outgoing",
           'transaction_id': txInfo.tx_hash,
           'project_id': myVariable.projectInfo.project_id,
           'recipients': txMetadata.metadata.msg.find(str => /Recipients: (\d+)/.test(str))?.match(/(\d+)/)?.[1],
           'exchange_rate': finalExchangeRate,
-          'tx_json_url': txMetadata.tx_json_url
+          'tx_json_url': txMetadata.tx_json_url,
+          'tx_json': txMetadata.metadata
         }
         return result;
       };
@@ -179,6 +181,9 @@ export function processTxInfo(matchingEntry, myVariable) {
         Object.keys(aggregatedResult).forEach((key) => {
             finalResult['total_tokens'].push(key);
             finalResult['total_amounts'].push((aggregatedResult[key] / Math.pow(10, decimalsInfo[key])).toFixed(decimalsInfo[key]));
+            if (key == 'ADA') {
+              finalResult['total_ada'] = Number(((Number(aggregatedResult[key]))/ Math.pow(10, decimalsInfo[key])).toFixed(decimalsInfo[key]))
+            }
         });
     
         console.log("final result", finalResult)
@@ -237,7 +242,10 @@ export function processTxInfo(matchingEntry, myVariable) {
         Object.keys(aggregatedResult).forEach((key) => {
             finalResult['total_tokens'].push(key);
             finalResult['total_amounts'].push((aggregatedResult[key] / Math.pow(10, decimalsInfo[key])).toFixed(decimalsInfo[key]));
-        });
+            if (key == 'ADA') {
+              finalResult['total_ada'] = Number(((Number(aggregatedResult[key]) + Number(txInfo.fee))/ Math.pow(10, decimalsInfo[key])).toFixed(decimalsInfo[key]))
+            }
+          });
         console.log("final result", finalResult)
         return finalResult;
     };              
@@ -246,8 +254,10 @@ export function processTxInfo(matchingEntry, myVariable) {
     let result = {};
     if (txType == "Staking") {
       result = {total_tokens: ['ADA'], total_amounts: ['2']}
+      result['total_ada'] = 2 + Number(parseFloat(txInfo.fee/ 1000000).toFixed(6))
     } else {
       result = {total_tokens: ['ADA'], total_amounts: ['0']}
+      result['total_ada'] = 0 + Number(parseFloat(txInfo.fee/ 1000000).toFixed(6))
     }
     console.log("Result", result)
     return result;
@@ -261,6 +271,7 @@ export function processTxInfo(matchingEntry, myVariable) {
     let rewards = parseFloat(txInfo.withdrawals[0].amount / 1000000).toFixed(6)
     result['total_amounts'] = [rewards];
     result['total_tokens'] = ['ADA']
+    result['total_ada'] = rewards - Number(parseFloat(txInfo.fee/ 1000000).toFixed(6))
     console.log("Result", result)
     return result;
   };

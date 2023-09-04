@@ -1,6 +1,7 @@
 import styles from '../styles/Transactions.module.css';
 import { deleteTx } from '../utils/deleteTx'
 import { processTxInfo } from '../utils/processTxInfo'
+import { processMonthlyBudget } from '../utils/processMonthlyBudget'
 import { updateDatabase } from '../utils/updateDatabase'
 import Link from 'next/link';
 
@@ -27,10 +28,14 @@ const TransactionManager: React.FC<TransactionManagerProps> = ({ myVariable, gro
 
   async function updateTransaction(tx: any) {
     //console.log(myVariable)
+    let balanceUpdates: any = {}
+        balanceUpdates['monthly_budget_balance'] = {'2023-07': {'ADA': '50000.000000'}};
+        balanceUpdates['wallet_balance_after'] = 50000;
     const matchingEntry = myVariable.transactionInfo.find((entry: any) => entry.txInfo.tx_hash === tx.transaction_id);
     let data = processTxInfo(matchingEntry, myVariable)
+    let updatedBalances = await processMonthlyBudget(balanceUpdates, data);
     //let status = await updateDatabase(data[0].metadata['674'], data[0].tx_hash, myVariable);
-    console.log("Updating Tx: ", tx.transaction_id, matchingEntry, data)
+    console.log("Updating Tx: ", tx.transaction_id, matchingEntry, data, updatedBalances)
   }
 
   const renderTableHeaders = () => {

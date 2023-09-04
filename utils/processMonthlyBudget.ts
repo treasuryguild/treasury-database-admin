@@ -1,25 +1,6 @@
-import React from 'react';
-import { deleteTransactions } from '../utils/deleteTransactions'
-import { processTxInfo } from '../utils/processTxInfo'
-import { processMonthlyBudget } from '../utils/processMonthlyBudget'
-import { updateDatabase } from '../utils/updateDatabase'
-
-interface ManageDatabaseProps {
-    myVariable: any;
-    groupName: string;
-    projectName: string;
-  }
-
-  const ManageDatabase: React.FC<ManageDatabaseProps> = ({ myVariable, groupName, projectName }) => {
+export async function processMonthlyBudget(updates: any, data: any) {
     
-    console.log("myVariable inside Database management", myVariable)
-
-    async function deleteTxs() {
-        const status = await deleteTransactions(myVariable.projectInfo.project_id);
-        console.log("deleting txs", status)
-    }
-
-    async function updateBalances(updates: any, data: any) {
+    async function updateBalances() {
         const tokenObject = data.total_tokens.reduce((obj: any, token: any, index: any) => ({ ...obj, [token]: parseFloat(data.total_amounts[index]) }), {});
 
         let result: any = {
@@ -77,44 +58,10 @@ interface ManageDatabaseProps {
             result['wallet_balance_after'] = (Number(result['wallet_balance_after']) - (Number(adaAmount) + (parseFloat(data.fee)/1000000)))
         }
         result['wallet_balance_after'] = parseFloat(result['wallet_balance_after']).toFixed(6)
-        //console.log("updateBalances", updates, data, result)
+        console.log("updateBalances", updates, data, result)
         return result;
     }
-    
-    async function insertTxs() {
-        let txData: any = {}
-        let updates: any = {};
-        let balanceUpdates: any = {}
-        balanceUpdates['monthly_budget_balance'] = {};
-        balanceUpdates['wallet_balance_after'] = 0;
-    
-        for (let idx in myVariable.transactionInfo) {
-            let data: any = processTxInfo(myVariable.transactionInfo[idx], myVariable);
-            let updatedBalances = await processMonthlyBudget(balanceUpdates, data);
-            balanceUpdates = updatedBalances;
-            updates = { ...balanceUpdates, ...data };
-            txData[idx] = {}
-            txData[idx] = myVariable.transactionInfo[idx]
-            txData[idx]['txData'] = updates
-            let status = await updateDatabase(txData[idx].txMetadata.metadata, updates.transaction_id, myVariable, updates);
-            console.log("inserting txs", status);
-            //console.log("inserting txs", updatedBalances, updates);
-        }
-        console.log("txData", txData)
-    }            
+  let monthly_budget = await updateBalances();
 
-    return (
-        <div>
-            <h2>Database management</h2>
-            <p>Delete and insert all txs at once</p>
-            <button onClick={deleteTxs} className="navitems">
-            Delete All Txs
-            </button>
-            <button onClick={insertTxs} className="navitems">
-            insert All Txs
-            </button>
-        </div>
-    );
-};
-
-export default ManageDatabase;
+  return monthly_budget;
+}

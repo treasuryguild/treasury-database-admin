@@ -35,5 +35,5 @@ export async function getBlockchainTxs(transactions, txids) {
       }
     }
     
-    return allTxs;
+    return allTxs.sort((a, b) => a.txInfo.tx_timestamp - b.txInfo.tx_timestamp);
 }
