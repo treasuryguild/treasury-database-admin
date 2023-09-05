@@ -19,6 +19,7 @@ interface Project {
     project_id: string;
     project_name: string;
     project_type: string;
+    group: string;
 }
 
 const ProjectPage = () => {
@@ -53,7 +54,8 @@ const ProjectPage = () => {
         const fetchProjectData = async () => {
             let budgetInfo = myVariable.projectInfo;
             let txs = myVariable.transactions;
-    
+            let projectInfo: any = projectData;
+            projectInfo = {...projectInfo, group: groupName}
             // If foundProject exists, fetch the monthly budget
             if (projectData) {
                 setLoading(true);
@@ -63,7 +65,7 @@ const ProjectPage = () => {
                 const allTxs = await getBlockchainTxs(transactions, txids);
                 const incomingTx = allTxs.find((entry: any) => entry.txMetadata.txType !== "Incoming");
                 const stake_addr = incomingTx?.txInfo.inputs[0].stake_addr;
-                setMyVariable(prevState => ({ ...prevState, budgetInfo, projectInfo: projectData, transactions: txs, transactionInfo: allTxs, stake_addr }));
+                setMyVariable(prevState => ({ ...prevState, budgetInfo, projectInfo, transactions: txs, transactionInfo: allTxs, stake_addr }));
                 setLoading(false);
             }
         };

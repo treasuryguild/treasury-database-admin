@@ -77,14 +77,30 @@ export async function updateDatabase(metadata, transaction_id, myVariable, txDat
   async function updateContributions(tx_id) {
     try {
       const promises = contributions.map(async (contribution) => {
+        const task_name = contribution.name ? contribution.name.join(' ') : null;
+        const task_date = contribution?.arrayMap?.date?.join(',') || null;
+        const task_sub_group = contribution?.arrayMap?.subGroup?.join(',') || null;
+        const task_array_map = contribution.arrayMap ? contribution.arrayMap : null;
+        const task_description = contribution.description ? contribution.description.join(' ') : null;
+        const task_label = (contribution?.arrayMap?.label && contribution.arrayMap.label.length > 0) ? contribution.arrayMap.label.join(',') : (Array.isArray(contribution.label) ? contribution.label.join(',') : (contribution.label ? contribution.label : null));
+            
+        const updates = {
+          project_id,
+          tx_id,
+          task_creator: myVariable.projectInfo.group,
+          task_name: task_name,
+          task_label: task_label,
+          task_description: task_description,
+          task_date: task_date,
+          task_sub_group: task_sub_group,
+          task_array_map: task_array_map,
+          task_type: txData.tx_type,
+        }
         const { data, error } = await supabase
           .from('contributions')
-          .upsert([{ 
-            task_name: contribution.name, 
-            task_label: contribution.label, 
-            tx_id,
-            project_id
-          }])
+          .upsert([ 
+            updates
+          ])
           .select('contribution_id');
 
         if (error) throw error;
@@ -114,17 +130,18 @@ export async function updateDatabase(metadata, transaction_id, myVariable, txDat
             tokensArray.push(token);
             amountsArray.push(amount);
           }
+          const updates = { 
+            contributor_id: contributor, 
+            tokens: tokensArray, 
+            amounts: amountsArray, 
+            contribution_id,
+            project_id,
+            tx_id
+          }
   
           await supabase
             .from('distributions')
-            .upsert([{ 
-              contributor_id: contributor, 
-              tokens: tokensArray, 
-              amounts: amountsArray, 
-              contribution_id,
-              project_id,
-              tx_id
-            }]);
+            .upsert([updates]);
         }
       });
   
