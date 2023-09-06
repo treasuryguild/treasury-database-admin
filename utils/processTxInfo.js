@@ -180,7 +180,7 @@ export function processTxInfo(matchingEntry, myVariable) {
         // Divide by respective decimals and format, then populate the arrays
         Object.keys(aggregatedResult).forEach((key) => {
             finalResult['total_tokens'].push(key);
-            finalResult['total_amounts'].push((aggregatedResult[key] / Math.pow(10, decimalsInfo[key])).toFixed(decimalsInfo[key]));
+            finalResult['total_amounts'].push(Number((aggregatedResult[key] / Math.pow(10, decimalsInfo[key])).toFixed(decimalsInfo[key])));
             if (key == 'ADA') {
               finalResult['total_ada'] = Number(((Number(aggregatedResult[key]))/ Math.pow(10, decimalsInfo[key])).toFixed(decimalsInfo[key]))
             }
@@ -241,7 +241,7 @@ export function processTxInfo(matchingEntry, myVariable) {
         // Divide aggregatedResult by respective decimals and format, then populate the arrays
         Object.keys(aggregatedResult).forEach((key) => {
             finalResult['total_tokens'].push(key);
-            finalResult['total_amounts'].push((aggregatedResult[key] / Math.pow(10, decimalsInfo[key])).toFixed(decimalsInfo[key]));
+            finalResult['total_amounts'].push(Number((aggregatedResult[key] / Math.pow(10, decimalsInfo[key])).toFixed(decimalsInfo[key])));
             if (key == 'ADA') {
               finalResult['total_ada'] = Number(((Number(aggregatedResult[key]) + Number(txInfo.fee))/ Math.pow(10, decimalsInfo[key])).toFixed(decimalsInfo[key]))
             }

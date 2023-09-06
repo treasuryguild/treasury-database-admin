@@ -127,7 +127,12 @@ export async function updateDatabase(metadata, transaction_id, myVariable, txDat
   
           for (const token in tokensObj) {
             const amount = tokensObj[token];
-            tokensArray.push(token);
+            if (token == 'gimbal') {
+              tokensArray.push('GMBL');
+            } else {
+              tokensArray.push(token);
+            }
+            
             amountsArray.push(amount);
           }
           const updates = { 
