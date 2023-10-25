@@ -1,5 +1,7 @@
 import React from 'react';
-import { useMyVariable } from '../context/MyVariableContext'
+import { useMyVariable } from '../context/MyVariableContext';
+import { updateSnetDatabase } from '../utils/updateSnetDatabase';
+import { mergeSnetData } from '../utils/mergeSnetData';
 
 const SnetFixComponent = () => {
     const { myVariable, setMyVariable } = useMyVariable();
@@ -16,7 +18,8 @@ const SnetFixComponent = () => {
         return {
           ...contribution,
           txid: tx.txid,
-          msg: tx.msg
+          msg: tx.msg,
+          mdVersion: tx.mdVersion
         };
       });
     }).flat();
@@ -44,33 +47,33 @@ const SnetFixComponent = () => {
     });
 
     const filteredAndUpdatedCombinedData = combinedData
-    .filter((transaction: any) => {
-      return transaction.msg && transaction.txid === transaction['Transaction ID'];
+    .filter((contribution: any) => {
+      return contribution.msg && contribution.txid === contribution['Transaction ID'];
     })  // Remove transactions without 'msg' and where txid is not equal to 'Transaction ID'
-    .map((transaction: any) => {
+    .map((contribution: any) => {
       // Only add arrayMap if it doesn't exist
-      if (!transaction.arrayMap) {
+      if (!contribution.arrayMap) {
         // Initialize arrayMap
-        transaction.arrayMap = {};
+        contribution.arrayMap = {};
         // Move "Date (task completed)" to arrayMap.date
-        transaction.arrayMap.date = [transaction["Date (task completed)"]];
+        contribution.arrayMap.date = [contribution["Date (task completed)"]];
         // Move label array to arrayMap.label
-        transaction.arrayMap.label = transaction.label;
+        contribution.arrayMap.label = contribution.label;
         // Move "Sub Group" value to arrayMap.subGroup
-        transaction.arrayMap.subGroup = [transaction["Sub Group"]];
+        contribution.arrayMap.subGroup = [contribution["Sub Group"]];
       }
-      return transaction;
+      return contribution;
     });
   
-    const finalData = filteredAndUpdatedCombinedData.map((transaction: any) => {
-      const { 'Task ID': _, ...rest } = transaction;  // Remove "Task ID"
+    const finalData = filteredAndUpdatedCombinedData.map((contribution: any) => {
+      const { 'Task ID': _, ...rest } = contribution;  // Remove "Task ID"
       return rest;
     });  
     
     // Add this block for removing duplicates based on hash
 const seenHashes = new Set();
-const uniqueFinalData = finalData.filter((transaction: any) => {
-  const hash = hashObject(transaction);
+const uniqueFinalData = finalData.filter((contribution: any) => {
+  const hash = hashObject(contribution);
   if (seenHashes.has(hash)) {
     return false;
   }
@@ -78,14 +81,58 @@ const uniqueFinalData = finalData.filter((transaction: any) => {
   return true;
 });
 
-    console.log("combinedData, filteredAndUpdatedCombinedData, finalData", combinedData, filteredAndUpdatedCombinedData, finalData, uniqueFinalData)
+// Transform uniqueFinalData back to original transaction format
+const contributionsToTransactions = (data: any) => {
+  return data.reduce((acc: any, contribution: any) => {
+    const { txid, msg, mdVersion } = contribution;
+
+    const existingTransaction = acc.find((trans: any) => trans.txid === txid);
+
+    if (existingTransaction) {
+      existingTransaction.contributions.push(contribution);
+    } else {
+      acc.push({
+        txid,
+        msg: Array.isArray(msg) ? msg : [msg],
+        mdVersion: Array.isArray(mdVersion) ? mdVersion : [mdVersion],
+        contributions: [contribution],
+      });
     }
+    
+    return acc;
+  }, []);
+};
+
+// Function to keep only certain keys in an object
+const keepKeys = (obj: any, keysToKeep: string[]) => {
+  return Object.keys(obj).reduce((newObj: any, key: string) => {
+    if (keysToKeep.includes(key)) {
+      newObj[key] = obj[key];
+    }
+    return newObj;
+  }, {});
+};
+
+// Your existing keysToKeep array
+const keysToKeep = ['taskCreator', 'name', 'contributors', 'arrayMap', 'description'];
+
+const filterContributionsInTransactions = (transactions: any[]) => {
+  transactions.forEach((transaction: any) => {
+    transaction.contributions = transaction.contributions.map((contribution: any) => keepKeys(contribution, keysToKeep));
+  });
+};
+
+// Sample usage after calling contributionsToTransactions
+const transactions = contributionsToTransactions(uniqueFinalData);
+filterContributionsInTransactions(transactions);
+setMyVariable(prevState => ({
+  ...prevState,
+  transactions: transactions,
+}));
+console.log("Transformed Transactions from uniqueFinalData", transactions, uniqueFinalData);
+}
 
     async function test() { 
-        setMyVariable(prevState => ({
-            ...prevState,
-            transactions: [],
-          }));
         console.log("Test 2", myVariable.csvDoc, myVariable.gitHubTxs, myVariable.databaseTxs)
     }
 
@@ -100,12 +147,28 @@ const uniqueFinalData = finalData.filter((transaction: any) => {
       return hash;
     }
     
-    
+    async function mergeData() {
+      let transactions = await mergeSnetData(myVariable.csvDoc, myVariable.gitHubTxs, myVariable.databaseTxs);
+      console.log("transactions", transactions)
+    }
+    async function checkDatabase() {
+      let status = await updateSnetDatabase(myVariable.transactions[0], myVariable.transactions[0].txid)
+      console.log("database", status)
+    }
+    async function updateDatabase() {
+      console.log("Updating Database")
+    }
+    async function updateGitHub() {
+      console.log("Updating GitHub")
+    }
     return (
         <div>
             <h2>This is the Snet Fix component</h2>
             <button onClick={test}>Fix database</button>
-            <button onClick={mergeTxs}>mergeTxs</button>
+            <button onClick={mergeData}>mergeData</button>
+            <button onClick={checkDatabase}>checkDatabase</button>
+            <button onClick={updateDatabase}>updateDatabase</button>
+            <button onClick={updateGitHub}>updateGitHub</button>
         </div>
     );
 };
