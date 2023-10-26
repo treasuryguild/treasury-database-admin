@@ -22,7 +22,7 @@ const SnetFix: NextPage = () => {
   }, []);
 
   useEffect(() => {
-   console.log(myVariable) 
+   console.log(myVariable); 
   }, [myVariable]);
 
   async function getTxsCsv() {
@@ -41,6 +41,23 @@ const SnetFix: NextPage = () => {
     });
   }
 
+  function extractTxIdFromContent(base64Content: string): string | null {
+    try {
+      // Decode the base64 content
+      const decodedContent = atob(base64Content);
+  
+      // Parse the JSON object
+      const parsedContent = JSON.parse(decodedContent);
+  
+      // Return the txid
+      return parsedContent.txid || null;
+    } catch (error) {
+      console.error('Error in extracting txid:', error);
+      return null;
+    }
+  }
+  
+
   async function getGitHub() {
     const githubApiUrl = 'https://api.github.com/repos/treasuryguild/treasury-system-v4/git/trees/main?recursive=1';
     
@@ -49,14 +66,40 @@ const SnetFix: NextPage = () => {
       const files = response.data.tree.filter((file: any) => file.path.startsWith("Transactions/Singularity-Net/TreasuryWallet/Singularity-Net-Ambassador-Wallet/bulkTransactions"));
       
       const jsonFiles: any = [];
-  
+      const txidToFileMap: any = {};
+
       for (const file of files) {
         const fileData = await axios.get(file.url);
-  
+        const txid = fileData?.data?.content ? extractTxIdFromContent(fileData.data.content.trim()) : null;
+
+        if (txid) {
+          txidToFileMap[txid] = { filename: file.path, sha: file.sha };
+        }
+        // Extract UNIX timestamp from the filename
+        const timestampMatch = file.path.match(/(\d+)-Singularity-Net-bulkTransaction\.json/);
+        let formattedDate = null;
+      
+        if (timestampMatch && timestampMatch[1]) {
+          const timestamp = timestampMatch[1];
+          const date = new Date(Number(timestamp));
+      
+          // Format the date to "14.02.23"
+          const year = date.getUTCFullYear().toString().substr(-2);
+          const month = String(date.getUTCMonth() + 1).padStart(2, '0');
+          const day = String(date.getUTCDate()).padStart(2, '0');
+      
+          formattedDate = `${day}.${month}.${year}`;
+        }
+      
         try {
           const cleanStr = fileData.data.content.trim().replace(/[\r\n]+/gm, "");
-          const fileContent = atob(cleanStr);
-          jsonFiles.push(JSON.parse(fileContent));
+          const fileContent = JSON.parse(atob(cleanStr));
+          
+          // Include the formatted date inside each parsed JSON content
+          fileContent.transactionDate = formattedDate;
+          
+          jsonFiles.push(fileContent);
+          
         } catch (e) {
           console.error('Error decoding base64:', e);
         }
@@ -65,6 +108,7 @@ const SnetFix: NextPage = () => {
       setMyVariable(prevState => ({
         ...prevState,
         gitHubTxs: jsonFiles,
+        txidToFileMap: txidToFileMap,
       }));
   
     } catch (error) {
