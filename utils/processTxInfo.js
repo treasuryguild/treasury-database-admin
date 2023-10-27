@@ -9,6 +9,7 @@ const tickers = {
     "GMBL":"asset1seuf4pwhwdxqtrsz4axfwtrp94gkdlhcyat9nn",
     "AGIX":"asset1wwyy88f8u937hz7kunlkss7gu446p6ed5gdfp6",
     "COPI":"asset1c6uau7pufsxhnm7eg0eerhu4snwfd9sn7kvvvz",
+    "SNet test token":"asset1eg7jp22f7qtczjj2da9nk65g6f49qkqtll93ku"
 }
 
 export function processTxInfo(matchingEntry, myVariable) {
@@ -161,7 +162,7 @@ export function processTxInfo(matchingEntry, myVariable) {
                     if (!assetNameStr) {
                         assetNameStr = hexToString(asset.asset_name);
                     }
-    
+                    console.log(assetNameStr)
                     if (!aggregatedResult.hasOwnProperty(assetNameStr)) {
                         aggregatedResult[assetNameStr] = 0;
                     }

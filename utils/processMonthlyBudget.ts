@@ -46,7 +46,7 @@ export async function processMonthlyBudget(updates: any, data: any, myVariable: 
                 return;
             }
             const amount = parseFloat(data.total_amounts[index]);
-            if(myVariable.projectInfo.project_name === "Singularity Net Ambassador Wallet" && data.tx_type === "Incoming" && token === 'AGIX' && amount > 10000) {
+            if(myVariable.projectInfo.project_name === "Singularity Net Ambassador Wallet" && data.tx_type === "Incoming" && token === 'AGIX' && amount > 50000) {
                 result.monthly_budget_balance[transactionKey][token] = amount.toFixed(6);
                 return;
             }

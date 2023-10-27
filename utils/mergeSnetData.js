@@ -90,7 +90,7 @@ export async function mergeSnetData(csvDoc, gitHubTxs, databaseTxs) {
               // Move label array to arrayMap.label
               contribution.arrayMap.label = contribution.label;
               
-              let subGroup = "no subgroup";
+              let subGroup = "Ambassador Program";
       
               if (contribution["Sub Group"]) {
                 subGroup = contribution["Sub Group"];
@@ -100,9 +100,9 @@ export async function mergeSnetData(csvDoc, gitHubTxs, databaseTxs) {
                 const combinedStr = `${descriptionStr} ${nameStr}`.toLowerCase();
         
                 if (combinedStr.includes("translate into") || combinedStr.includes("verify translation") || combinedStr.includes("translate to")) {
-                  subGroup = "ambassador-translator";
+                  subGroup = "Ambassador Translator";
                 } else if (combinedStr.includes("handling fee") || combinedStr.includes("monthly fee for treasury work")) {
-                  subGroup = "treasury-guild";
+                  subGroup = "Treasury Guild";
                 }
               }
         

@@ -28,7 +28,8 @@ const SnetFixComponent = () => {
     
       for (const updatedTransaction of transactions) {
         const { filename, sha } = txidToFileMap[updatedTransaction.txid];
-        await updateGitHubFile(filename, updatedTransaction, sha);
+        let response = await updateGitHubFile(filename, updatedTransaction, sha);
+        console.log("GitHub Response", response)
       }
     }
     
