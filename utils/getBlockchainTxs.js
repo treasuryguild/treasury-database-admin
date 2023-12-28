@@ -2,9 +2,9 @@ import axios from "axios";
 
 export async function getBlockchainTxs(transactions, txids) {
     async function getTxInfo() {
-        const url = "https://api.koios.rest/api/v0/tx_info";
+        const url = "/api/getTxInfo";
         const data = {
-          _tx_hashes: txids,
+          txids: txids,
         };
     
         const response = await axios.post(url, data, {
