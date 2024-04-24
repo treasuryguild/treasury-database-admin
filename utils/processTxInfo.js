@@ -9,7 +9,8 @@ const tickers = {
     "GMBL":"asset1seuf4pwhwdxqtrsz4axfwtrp94gkdlhcyat9nn",
     "AGIX":"asset1wwyy88f8u937hz7kunlkss7gu446p6ed5gdfp6",
     "COPI":"asset1c6uau7pufsxhnm7eg0eerhu4snwfd9sn7kvvvz",
-    "SNet test token":"asset1eg7jp22f7qtczjj2da9nk65g6f49qkqtll93ku"
+    "SNet test token":"asset1eg7jp22f7qtczjj2da9nk65g6f49qkqtll93ku",
+    "Minutes":"asset1adu6y3qucg8kz0yf0rffmwhk540g4f0dcvew4t"
 }
 
 export function processTxInfo(matchingEntry, myVariable) {

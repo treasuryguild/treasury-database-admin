@@ -56,42 +56,23 @@ const ProjectPage = () => {
             let budgetInfo = myVariable.projectInfo;
             let txs = myVariable.transactions;
             let projectInfo: any = projectData;
-            projectInfo = { ...projectInfo, group: groupName };
-    
+            projectInfo = {...projectInfo, group: groupName}
             // If foundProject exists, fetch the monthly budget
             if (projectData) {
                 setLoading(true);
                 budgetInfo = await getMonthlyBudget(projectData.project_id);
                 txs = await getTransactions(projectData.project_id);
-    
-                // Call the new API route
-                try {
-                        const response = await fetch(`/api/getGitHubTxs?Group=${groupName}&Project=${projectName}&wallet_type=${projectData.project_type}`);
-                        if (!response.ok) {
-                            throw new Error(`HTTP error! status: ${response.status}`);
-                        }
-                        const { transactions, txids } = await response.json();
-                        const allTxs = await getBlockchainTxs(transactions, txids);
-                        const incomingTx = allTxs.find((entry: any) => entry.txMetadata.txType !== "Incoming");
-                        const stake_addr = incomingTx?.txInfo.inputs[0].stake_addr;
-                        setMyVariable(prevState => ({
-                            ...prevState,
-                            budgetInfo,
-                            projectInfo,
-                            transactions: txs,
-                            transactionInfo: allTxs,
-                            stake_addr
-                        }));
-                        setLoading(false);
-                    } catch (error) {
-                        console.error('Error fetching GitHub transactions:', error);
-                        // Handle the error appropriately (e.g., show an error message to the user)
-                    }
+                const {transactions, txids} = await getGitHubTxs(groupName, projectName,  projectData.project_type);
+                const allTxs = await getBlockchainTxs(transactions, txids);
+                const incomingTx = allTxs.find((entry: any) => entry.txMetadata.txType !== "Incoming");
+                const stake_addr = incomingTx?.txInfo.inputs[0].stake_addr;
+                setMyVariable(prevState => ({ ...prevState, budgetInfo, projectInfo, transactions: txs, transactionInfo: allTxs, stake_addr }));
+                setLoading(false);
             }
         };
     
         fetchProjectData();
-    }, [projectData]); 
+    }, [projectData]);    
     
 
     console.log("myVariable", myVariable);

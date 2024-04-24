@@ -20,26 +20,50 @@ interface UpdateLastTransactionsProps {
     }
 
     async function insertTxs() {
-        let txData: any = {}
+        console.log("test")
+        let txData: any = {};
         let updates: any = {};
-        let balanceUpdates: any = {}
+        let balanceUpdates: any = {};
         balanceUpdates['monthly_budget_balance'] = {};
         balanceUpdates['wallet_balance_after'] = 0;
-    
-        for (let idx in myVariable.transactionInfo) {
-            let data: any = processTxInfo(myVariable.transactionInfo[idx], myVariable);
-            let updatedBalances = await processMonthlyBudget(balanceUpdates, data, myVariable);
-            balanceUpdates = updatedBalances;
-            updates = { ...balanceUpdates, ...data };
-            txData[idx] = {}
-            txData[idx] = myVariable.transactionInfo[idx]
-            txData[idx]['txData'] = updates
-            let status = await updateDatabase(txData[idx].txMetadata.metadata, updates.transaction_id, myVariable, updates);
-            console.log("inserting txs", status);
-            //console.log("inserting txs", updatedBalances, updates);
+      
+        console.log("myVariable.transactions", myVariable.transactions);
+        console.log("myVariable.transactionInfo", myVariable.transactionInfo);
+        // Create a Set to store the transaction IDs from myVariable.transactionInfo
+        const existingTxIds = new Set(
+          myVariable.transactions.map((tx: any) => tx.transaction_id)
+        );
+        console.log("existingTxIds", existingTxIds);
+        // Filter out the transactions that are already in myVariable.transactionInfo
+        const newTransactions = myVariable.transactionInfo.filter(
+          (tx: any) => !existingTxIds.has(tx.txInfo.tx_hash) //tx.txInfo.tx_hash
+        );
+        console.log("newTransactions", newTransactions);
+        for (let tx of newTransactions) {
+          let data: any = processTxInfo(tx, myVariable);
+          let updatedBalances = await processMonthlyBudget(balanceUpdates, data, myVariable);
+          balanceUpdates = updatedBalances;
+          updates = { ...balanceUpdates, ...data };
+      
+          txData[tx.tx_id] = {
+            ...tx,
+            txData: updates,
+          };
+          console.log("data", data);
+          console.log("updatedBalances", updatedBalances);
+          console.log("updates", updates);
+          console.log("txData", txData);
+          let status = await updateDatabase(
+            tx.txMetadata.metadata,
+            updates.transaction_id,
+            myVariable,
+            updates
+          );
+          console.log("inserting txs", status);
         }
-        console.log("txData", txData)
-    }            
+      
+        console.log("txData", txData);
+      }           
 
     return (
         <div>
