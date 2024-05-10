@@ -14,7 +14,7 @@ import Balance from '../../../components/Balance';
 import Report from '../../../components/Report';
 import ManageDatabase from '../../../components/ManageDatabase';
 import UpdateLastTransactions from '../../../components/UpdateLastTransactions';
-
+import SnetWGBudgets from '../../../components/SnetWGBudgets';  
 
 interface Project {
     project_id: string;
@@ -24,7 +24,7 @@ interface Project {
 }
 
 const ProjectPage = () => {
-    const [activeTab, setActiveTab] = useState<'transactions' | 'txmanager' | 'balance' | 'report' | 'managedatabase' | 'updatelasttransactions'>('transactions');
+    const [activeTab, setActiveTab] = useState<'transactions' | 'txmanager' | 'balance' | 'report' | 'managedatabase' | 'updatelasttransactions' | 'budgets'>('transactions');
     const { myVariable, setMyVariable } = useMyVariable();
     const router = useRouter();
     const { groupName, projectName } = router.query;
@@ -89,6 +89,7 @@ const ProjectPage = () => {
                     <button onClick={() => setActiveTab('report')} className={activeTab === 'report' ? styles.active : styles.notactive}>Report</button>
                     <button onClick={() => setActiveTab('managedatabase')} className={activeTab === 'managedatabase' ? styles.active : styles.notactive}>Manage Database</button>
                     <button onClick={() => setActiveTab('updatelasttransactions')} className={activeTab === 'updatelasttransactions' ? styles.active : styles.notactive}>Update last transactions</button>
+                    <button onClick={() => setActiveTab('budgets')} className={activeTab === 'budgets' ? styles.active : styles.notactive}>Budgets</button>
                 </div>
             </div>
             {loading && (
@@ -109,6 +110,8 @@ const ProjectPage = () => {
                     <ManageDatabase myVariable={myVariable} groupName={groupName as string} projectName={projectName as string} />
                 ) : activeTab === 'updatelasttransactions' ? (
                     <UpdateLastTransactions myVariable={myVariable} groupName={groupName as string} projectName={projectName as string} />
+                ) : activeTab === 'budgets' ? (
+                    <SnetWGBudgets myVariable={myVariable} groupName={groupName as string} projectName={projectName as string} />
                 ) : (
                     <div>nothing selected</div> 
                 )
