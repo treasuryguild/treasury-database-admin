@@ -71,6 +71,37 @@ const SnetWGBudgets: React.FC<SnetWGBudgetsProps> = ({ myVariable, groupName, pr
         .eq('project_id', myVariable.projectInfo.project_id);
       if (error) console.log('error', error);
     }
+  
+    const totalBudgetPerQuarter: { [key: string]: number } = {};
+    quarters.forEach((quarter) => {
+      totalBudgetPerQuarter[quarter] = workgroups.reduce((sum, workgroup) => {
+        if (workgroup.sub_group !== 'ambassador-program') {
+          const [year, q] = quarter.slice(1).split('Q');
+          return sum + (workgroup.budgets[`B${year}`]?.[`Q${q}`]?.[selectedTokens[quarter]] || 0);
+        }
+        return sum;
+      }, 0);
+    });
+  
+    const ambassadorsBudget: any = {};
+    quarters.forEach((quarter) => {
+      const [year, q] = quarter.slice(1).split('Q');
+      const remainingBudget = 57648 * 3 - totalBudgetPerQuarter[quarter];
+      if (!ambassadorsBudget[`B${year}`]) {
+        ambassadorsBudget[`B${year}`] = {};
+      }
+      ambassadorsBudget[`B${year}`][`Q${q}`] = {
+        [selectedTokens[quarter]]: remainingBudget,
+      };
+    });
+  
+    const { error } = await supabase
+      .from('subgroups')
+      .update({ budgets: ambassadorsBudget })
+      .eq('sub_group', 'ambassador-program')
+      .eq('project_id', myVariable.projectInfo.project_id);
+    if (error) console.log('error', error);
+  
     getWorkgroups();
   }
 
