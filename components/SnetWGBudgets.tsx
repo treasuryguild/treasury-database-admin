@@ -72,6 +72,7 @@ const SnetWGBudgets: React.FC<SnetWGBudgetsProps> = ({ myVariable, groupName, pr
       if (error) console.log('error', error);
     }
   
+    /*
     const totalBudgetPerQuarter: { [key: string]: number } = {};
     quarters.forEach((quarter) => {
       totalBudgetPerQuarter[quarter] = workgroups.reduce((sum, workgroup) => {
@@ -86,7 +87,7 @@ const SnetWGBudgets: React.FC<SnetWGBudgetsProps> = ({ myVariable, groupName, pr
     const ambassadorsBudget: any = {};
     quarters.forEach((quarter) => {
       const [year, q] = quarter.slice(1).split('Q');
-      const remainingBudget = 57648 * 3 - totalBudgetPerQuarter[quarter];
+      const remainingBudget = 144258 - totalBudgetPerQuarter[quarter];
       if (!ambassadorsBudget[`B${year}`]) {
         ambassadorsBudget[`B${year}`] = {};
       }
@@ -101,7 +102,7 @@ const SnetWGBudgets: React.FC<SnetWGBudgetsProps> = ({ myVariable, groupName, pr
       .eq('sub_group', 'ambassador-program')
       .eq('project_id', myVariable.projectInfo.project_id);
     if (error) console.log('error', error);
-  
+    */
     getWorkgroups();
   }
 
